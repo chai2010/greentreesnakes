@@ -21,7 +21,7 @@ Contents:
 .. seealso::
    
    `Instrumenting the AST <http://www.dalkescientific.com/writings/diary/archive/2010/02/22/instrumenting_the_ast.html>`_
-     Using the AST to 
+     Using AST tools to assess code coverage.
 
 
 Indices and tables
