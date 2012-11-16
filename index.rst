@@ -16,6 +16,7 @@ Contents:
    :maxdepth: 2
    
    tofrom.rst
+   nodes.rst
    examples.rst
 
 .. seealso::
