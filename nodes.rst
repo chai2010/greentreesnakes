@@ -154,6 +154,11 @@ Expressions
                            kwargs=Name(id='e', ctx=Load()))),
          ])
 
+.. class:: keyword(arg, value)
+   
+   A keyword argument to a function call or class definition. ``arg`` is a raw
+   string of the parameter name, ``value`` is a node to pass in.
+
 .. class:: Attribute(value, attr, ctx)
 
    Attribute access, e.g. ``d.keys``. ``value`` is a node, typically a
@@ -234,6 +239,12 @@ Statements
          ], value=Name(id='c', ctx=Load())),
      ])
 
+.. class AugAssign(target, op, value)
+
+   Augmented assignment, such as ``a += 1``. In that example, ``target`` is a
+   :class:`Name` node for ``a``, op is :class:`Add`, and ``value`` is a
+   :class:`Num` node for 1.
+
 .. class:: Print(dest, values, nl)
 
    Print statement, Python 2 only. ``dest`` is an optional destination (for
@@ -294,4 +305,186 @@ Imports
           ], level=2),
       ])
 
+Control flow
+------------
+
+.. note::
+   Optional clauses such as ``else`` are stored as an empty list if they're
+   not present.
+
+.. class:: If(test, body, orelse)
+
+   An ``if`` statement. ``test`` holds a single node, such as a :class:`Compare`
+   node. ``body`` and ``orelse`` each hold a list of nodes.
    
+   ``elif`` clauses don't have a special representation in the AST, but rather
+   appear as extra :class:`If` nodes within the ``orelse`` section of the
+   previous one.
+
+.. class:: For(target, iter, body, orelse)
+
+   A ``for`` loop. ``target`` holds the variable(s) the loop assigns to, as a
+   single :class:`Name`, :class:`Tuple` or :class:`List` node. ``iter`` holds
+   the item to be looped over, again as a single node. ``body`` and ``orelse``
+   contain lists of nodes to execute. Those in ``orelse`` are executed if the
+   loop finishes normally, rather than via a ``break`` statement.
+
+.. class:: While(test, body, orelse)
+
+   A ``while`` loop. ``test`` holds the condition, such as a :class:`Compare`
+   node.
+
+.. class:: Break
+           Continue
+
+   The ``break`` and ``continue`` statements.
+
+.. class:: TryFinally(body, finalbody)
+           TryExcept(body, handlers, orelse)
+   
+   ``try`` blocks. All attributes are list of nodes to execute, except for
+   ``handlers``, which is a list of :class:`ExceptHandler` nodes.
+   
+   If a ``try`` block has both ``except`` and ``finally`` clauses, it is parsed
+   as a :class:`TryFinally`, with the body containing a :class:`TryExcept`.
+
+.. class:: ExceptHandler(type, name, body)
+
+   A single ``except`` clause. ``type`` is the exception type it will match,
+   typically a :class:`Name` node. ``name`` is a raw string for the name to hold
+   the exception, or None if the clause doesn't have ``as foo``. ``body`` is
+   a list of nodes.
+
+.. class:: With(context_expr, optional_vars, body)
+
+   A ``with`` block. ``context_expr`` is the context manager, often a
+   :class:`Call` node. ``optional_vars`` is a :class:`Name`, :class:`Tuple` or
+   :class:`List` for the ``as foo`` part, or ``None`` if that isn't used.
+
+Function and class definitions
+------------------------------
+
+.. class:: FunctionDef(name, args, body, decorator_list, returns)
+
+   A function definition. 
+   
+   * ``name`` is a raw string of the function name.
+   * ``args`` is a :class:`arguments` node.
+   * ``body`` is the list of nodes inside the function.
+   * ``decorator_list`` is the list of decorators to be applied, stored outermost
+     first (i.e. the first in the list will be applied last).
+   * ``returns`` is the return annotation (Python 3 only).
+
+.. class:: Lambda(args, body)
+
+   ``lambda`` is a minimal function definition that can be used inside an
+   expression. Unlike :class:`FunctionDef`, ``body`` holds a single node.
+
+.. class:: arguments(args, vararg, varargannotation, kwonlyargs, kwarg, \
+                     kwargannotation, defaults, kw_defaults)
+   
+   The arguments for a function. In **Python 3**:
+   
+   * ``args`` and ``kwonlyargs`` are lists of :class:`arg` nodes.
+   * ``vararg`` and ``kwarg`` are raw strings referring to the ``*args, **kwargs``
+     parameters.
+   * ``varargannotation`` and ``kwargannotation`` - see :class:`arg`
+   * ``defaults`` is a list of default values for arguments that can be passed
+     positionally. If there are fewer defaults, they correspond to the last n
+     arguments.
+   * ``kw_defaults`` is a list of default values for keyword-only arguments. If
+     one is ``None``, the corresponding argument is required.
+
+   In **Python 2**, the attributes for annotations and keyword-only arguments
+   are not needed.
+
+.. class:: arg(arg, annotation)
+
+   A single argument in a list; Python 3 only. ``arg`` is a raw string of the
+   argument name, ``annotation`` is its annotation, such as a :class:`Str` or
+   :class:`Name` node.
+   
+   In Python 2, arguments are instead represented as :class:`Name` nodes, with
+   ``ctx=Param()``.
+
+::
+
+    In [52]: %%dump_ast
+       ....: @dec1
+       ....: @dec2
+       ....: def f(a: 'annotation', b=1, c=2, *d, e, f=3, **g) -> 'return annotation':
+       ....:   pass
+       ....: 
+    Module(body=[
+        FunctionDef(name='f', args=arguments(args=[
+            arg(arg='a', annotation=Str(s='annotation')),
+            arg(arg='b', annotation=None),
+            arg(arg='c', annotation=None),
+          ], vararg='d', varargannotation=None, kwonlyargs=[
+            arg(arg='e', annotation=None),
+            arg(arg='f', annotation=None),
+          ], kwarg='g', kwargannotation=None, defaults=[
+            Num(n=1),
+            Num(n=2),
+          ], kw_defaults=[
+            None,
+            Num(n=3),
+          ]), body=[
+            Pass(),
+          ], decorator_list=[
+            Name(id='dec1', ctx=Load()),
+            Name(id='dec2', ctx=Load()),
+          ], returns=Str(s='return annotation')),
+      ])
+
+.. class:: Return(value)
+
+   A ``return`` statement.
+
+.. class:: Yield(value)
+
+   A ``yield`` expression. Because ``yield`` is now an expression, it must be
+   wrapped in a :class:`Expr` node if the value sent back is not used.
+
+.. class:: Global(names)
+           Nonlocal(names)
+
+   ``global`` and ``nonlocal`` statements. ``names`` is a list of raw strings.
+
+.. class:: ClassDef(name, bases, keywords, starargs, kwargs, body, decorator_list)
+
+   A class definition.
+   
+   * ``name`` is a raw string for the class name
+   * ``bases`` is a list of nodes for explicitly specified base classes.
+   * ``keywords`` is a list of :class:`keyword` nodes, principally for 'metaclass'.
+     Other keywords will be passed to the metaclass, as per `PEP-3115
+     <http://www.python.org/dev/peps/pep-3115/>`_.
+   * ``starargs`` and ``kwargs`` are each a single node, as in a function call.
+     starargs will be expanded to join the list of base classes, and kwargs will
+     be passed to the metaclass.
+   * ``body`` is a list of nodes representing the code within the class
+     definition.
+   * ``decorator_list`` is a list of nodes, as in :class:`FunctionDef`.
+
+::
+
+    In [59]: %%dump_ast
+       ....: @dec1
+       ....: @dec2
+       ....: class foo(base1, base2, metaclass=meta):
+       ....:   pass
+       ....: 
+    Module(body=[
+        ClassDef(name='foo', bases=[
+            Name(id='base1', ctx=Load()),
+            Name(id='base2', ctx=Load()),
+          ], keywords=[
+            keyword(arg='metaclass', value=Name(id='meta', ctx=Load())),
+          ], starargs=None, kwargs=None, body=[
+            Pass(),
+          ], decorator_list=[
+            Name(id='dec1', ctx=Load()),
+            Name(id='dec2', ctx=Load()),
+          ]),
+      ])
