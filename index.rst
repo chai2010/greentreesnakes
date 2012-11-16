@@ -18,6 +18,10 @@ Contents:
    tofrom.rst
    examples.rst
 
+.. seealso::
+   
+   `Instrumenting the AST <http://www.dalkescientific.com/writings/diary/archive/2010/02/22/instrumenting_the_ast.html>`_
+     Using the AST to 
 
 
 Indices and tables
