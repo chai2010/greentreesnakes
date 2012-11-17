@@ -466,9 +466,9 @@ Control flow
 .. class:: ExceptHandler(type, name, body)
 
    A single ``except`` clause. ``type`` is the exception type it will match,
-   typically a :class:`Name` node. ``name`` is a raw string for the name to hold
-   the exception, or None if the clause doesn't have ``as foo``. ``body`` is
-   a list of nodes.
+   typically a :class:`Name` node (or ``None`` for a catch-all ``except:`` clause).
+   ``name`` is a raw string for the name to hold the exception, or ``None`` if
+   the clause doesn't have ``as foo``. ``body`` is a list of nodes.
 
 .. class:: With(context_expr, optional_vars, body)
 
