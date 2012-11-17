@@ -8,7 +8,8 @@ for introspection, testing, and mischief.
 
 The `official documentation for the ast module <http://docs.python.org/3/library/ast>`_
 is good, but somewhat brief. *Green Tree Snakes* is more like a field guide
-(or should that be forest guide?) for working with ASTs.
+(or should that be forest guide?) for working with ASTs. To contribute to the
+guide, see the `source repository <https://bitbucket.org/takluyver/greentreesnakes>`_.
 
 Contents:
 
