@@ -83,6 +83,26 @@ Variables
    <https://bitbucket.org/takluyver/greentreesnakes/src/default/astpp.py>`_ for
    Green Tree Snakes.
 
+.. class:: Starred(value, ctx)
+
+   A ``*var`` variable reference. ``value`` holds the variable, typically a
+   :class:`Name` node.
+   
+   Note that this *isn't* needed to call or define a function with ``*args`` -
+   the :class:`Call` and :class:`FunctionDef` nodes have special fields for that.
+
+::
+
+    >>> parseprint("a, *b = it")
+    Module(body=[
+        Assign(targets=[
+            Tuple(elts=[
+                Name(id='a', ctx=Store()),
+                Starred(value=Name(id='b', ctx=Store()), ctx=Store()),
+              ], ctx=Store()),
+          ], value=Name(id='it', ctx=Load())),
+      ])
+
 
 Expressions
 -----------
@@ -199,6 +219,11 @@ Expressions
    A keyword argument to a function call or class definition. ``arg`` is a raw
    string of the parameter name, ``value`` is a node to pass in.
 
+.. class:: IfExp(test, body, orelse)
+
+   An expression such as ``a if b else c``. Each field holds a single node, so
+   in that example, all three are ``Name`` nodes.
+
 .. class:: Attribute(value, attr, ctx)
 
    Attribute access, e.g. ``d.keys``. ``value`` is a node, typically a
@@ -249,6 +274,61 @@ Subscripting
                Index(value=Num(n=3)),
              ]), ctx=Load())),
          ])
+
+Comprehensions
+~~~~~~~~~~~~~~
+
+.. class:: ListComp(elt, generators)
+           SetComp(elt, generators)
+           GeneratorExp(elt, generators)
+           DictComp(key, value, generators)
+
+   List and set comprehensions, generator expressions, and dictionary
+   comprehensions. ``elt`` (or ``key`` and ``value``) is a single node
+   representing the part that will be evaluated for each item.
+   
+   ``generators`` is a list of :class:`comprehension` nodes. Comprehensions with
+   more than one ``for`` part are legal, if tricky to get right - see the
+   example below.
+
+.. class:: comprehension(target, iter, ifs)
+
+   One ``for`` clause in a comprehension. ``target`` is the reference to use for
+   each element - typically a :class:`Name` or :class:`Tuple` node. ``iter``
+   is the object to iterate over. ``ifs`` is a list of test expressions: each
+   ``for`` clause can have multiple ``ifs``
+
+::
+
+    # Multiple comprehensions in one.
+    >>> parseprint("[ord(c) for line in file for c in line]", mode='eval')
+    Expression(body=ListComp(elt=Call(func=Name(id='ord', ctx=Load()), args=[
+        Name(id='c', ctx=Load()),
+      ], keywords=[], starargs=None, kwargs=None), generators=[
+        comprehension(target=Name(id='line', ctx=Store()), iter=Name(id='file', ctx=Load()), ifs=[]),
+        comprehension(target=Name(id='c', ctx=Store()), iter=Name(id='line', ctx=Load()), ifs=[]),
+      ]))
+
+
+    # Multiple if clauses
+    >>> parseprint("(n**2 for n in it if n>5 if n<10)", mode='eval')
+    Expression(body=GeneratorExp(elt=BinOp(left=Name(id='n', ctx=Load()), op=Pow(), right=Num(n=2)), generators=[
+        comprehension(target=Name(id='n', ctx=Store()), iter=Name(id='it', ctx=Load()), ifs=[
+            Compare(left=Name(id='n', ctx=Load()), ops=[
+                Gt(),
+              ], comparators=[
+                Num(n=5),
+              ]),
+            Compare(left=Name(id='n', ctx=Load()), ops=[
+                Lt(),
+              ], comparators=[
+                Num(n=10),
+              ]),
+          ]),
+      ]))
+
+
+
 
 Statements
 ----------
