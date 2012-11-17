@@ -300,8 +300,7 @@ Comprehensions
 
 ::
 
-    # Multiple comprehensions in one.
-    >>> parseprint("[ord(c) for line in file for c in line]", mode='eval')
+    >>> parseprint("[ord(c) for line in file for c in line]", mode='eval') # Multiple comprehensions in one.
     Expression(body=ListComp(elt=Call(func=Name(id='ord', ctx=Load()), args=[
         Name(id='c', ctx=Load()),
       ], keywords=[], starargs=None, kwargs=None), generators=[
@@ -309,9 +308,7 @@ Comprehensions
         comprehension(target=Name(id='c', ctx=Store()), iter=Name(id='line', ctx=Load()), ifs=[]),
       ]))
 
-
-    # Multiple if clauses
-    >>> parseprint("(n**2 for n in it if n>5 if n<10)", mode='eval')
+    >>> parseprint("(n**2 for n in it if n>5 if n<10)", mode='eval')       # Multiple if clauses
     Expression(body=GeneratorExp(elt=BinOp(left=Name(id='n', ctx=Load()), op=Pow(), right=Num(n=2)), generators=[
         comprehension(target=Name(id='n', ctx=Store()), iter=Name(id='it', ctx=Load()), ifs=[
             Compare(left=Name(id='n', ctx=Load()), ops=[
@@ -326,9 +323,6 @@ Comprehensions
               ]),
           ]),
       ]))
-
-
-
 
 Statements
 ----------
@@ -406,9 +400,10 @@ Imports
 
 .. class:: ImportFrom(module, names, level)
 
-   Represents``from x import y``. ``module`` is a raw string of the 'from' name,
-   without any leading dots. ``level`` is an integer holding the level of the
-   relative import (0 means absolute import).
+   Represents ``from x import y``. ``module`` is a raw string of the 'from' name,
+   without any leading dots, or ``None`` for statments such as ``from . import foo``.
+   ``level`` is an integer holding the level of the relative import (0 means
+   absolute import).
 
 .. class:: alias(name, asname)
 
@@ -417,11 +412,11 @@ Imports
 
 ::
 
-    >>> parseprint("from ..foo.bar import a as b, c as d")
+    >>> parseprint("from ..foo.bar import a as b, c")
     Module(body=[
         ImportFrom(module='foo.bar', names=[
             alias(name='a', asname='b'),
-            alias(name='c', asname='d'),
+            alias(name='c', asname=None),
           ], level=2),
       ])
 
