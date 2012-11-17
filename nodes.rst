@@ -97,10 +97,33 @@ Expressions
    A unary operation. ``op`` is the operator, and ``operand`` any expression
    node.
 
+.. class:: UAdd
+           USub
+           Not
+           Invert
+
+   Unary operator tokens. :class:`Not` is the ``not`` keyword, :class:`Invert`
+   is the ``~`` operator.
+
 .. class:: BinOp(left, op, right)
 
    A binary operation (like addition or division). ``op`` is the operator, and
    ``left`` and ``right`` are any expression nodes.
+
+.. class:: Add
+           Sub
+           Mult
+           Div
+           FloorDiv
+           Mod
+           Pow
+           LShift
+           RShift
+           BitOr
+           BitXor
+           BitAnd
+
+   Binary operator tokens.
 
 .. class:: BoolOp(op, values)
 
@@ -110,6 +133,11 @@ Expressions
    with several values.
    
    This doesn't include ``not``, which is a :class:`UnaryOp`.
+
+.. class:: And
+           Or
+
+   Boolean operator tokens.
 
 .. class:: Compare(left, ops, comparators)
 
@@ -128,6 +156,18 @@ Expressions
           ])),
         ])
 
+.. class:: Eq
+           NotEq
+           Lt
+           LtE
+           Gt
+           GtE
+           Is
+           IsNot
+           In
+           NotIn
+
+   Comparison operator tokens.
 
 .. class:: Call(func, args, keywords, starargs, kwargs)
 
