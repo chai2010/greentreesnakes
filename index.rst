@@ -18,6 +18,7 @@ Contents:
    
    tofrom.rst
    nodes.rst
+   manipulating.rst
    examples.rst
 
 .. seealso::

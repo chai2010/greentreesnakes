@@ -33,6 +33,8 @@ Python code can be compiled in three modes. The root of the AST depends on the
   the AST is an :class:`ast.Interactive`, and its ``body`` attribute is a list
   of nodes.
 
+.. _fix-locations:
+
 Fixing locations
 ----------------
 
