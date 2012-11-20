@@ -1,6 +1,9 @@
 Examples of working with ASTs
 =============================
 
+Working versions of these examples are in the `examples directory of the source
+repository <https://bitbucket.org/takluyver/greentreesnakes/src/default/examples>`_.
+
 Wrapping integers
 -----------------
 
