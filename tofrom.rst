@@ -28,7 +28,7 @@ Python code can be compiled in three modes. The root of the AST depends on the
   :class:`ast.Call` or :class:`ast.BinOp`. This is different from
   :class:`ast.Expr`, which holds an expression within an AST.
 * **single** - Single statements or expressions can be compiled with
-  ``mode='single``. If it's an expression, :func:`sys.displayhook` will be called
+  ``mode='single'``. If it's an expression, :func:`sys.displayhook` will be called
   with the result, like when code is run in the interactive shell. The root of
   the AST is an :class:`ast.Interactive`, and its ``body`` attribute is a list
   of nodes.
