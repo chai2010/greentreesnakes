@@ -83,6 +83,26 @@ Variables
    <https://bitbucket.org/takluyver/greentreesnakes/src/default/astpp.py>`_ for
    Green Tree Snakes.
 
+.. class:: Starred(value, ctx)
+
+   A ``*var`` variable reference. ``value`` holds the variable, typically a
+   :class:`Name` node.
+   
+   Note that this *isn't* needed to call or define a function with ``*args`` -
+   the :class:`Call` and :class:`FunctionDef` nodes have special fields for that.
+
+::
+
+    >>> parseprint("a, *b = it")
+    Module(body=[
+        Assign(targets=[
+            Tuple(elts=[
+                Name(id='a', ctx=Store()),
+                Starred(value=Name(id='b', ctx=Store()), ctx=Store()),
+              ], ctx=Store()),
+          ], value=Name(id='it', ctx=Load())),
+      ])
+
 
 Expressions
 -----------
@@ -97,10 +117,33 @@ Expressions
    A unary operation. ``op`` is the operator, and ``operand`` any expression
    node.
 
+.. class:: UAdd
+           USub
+           Not
+           Invert
+
+   Unary operator tokens. :class:`Not` is the ``not`` keyword, :class:`Invert`
+   is the ``~`` operator.
+
 .. class:: BinOp(left, op, right)
 
    A binary operation (like addition or division). ``op`` is the operator, and
    ``left`` and ``right`` are any expression nodes.
+
+.. class:: Add
+           Sub
+           Mult
+           Div
+           FloorDiv
+           Mod
+           Pow
+           LShift
+           RShift
+           BitOr
+           BitXor
+           BitAnd
+
+   Binary operator tokens.
 
 .. class:: BoolOp(op, values)
 
@@ -110,6 +153,11 @@ Expressions
    with several values.
    
    This doesn't include ``not``, which is a :class:`UnaryOp`.
+
+.. class:: And
+           Or
+
+   Boolean operator tokens.
 
 .. class:: Compare(left, ops, comparators)
 
@@ -128,6 +176,18 @@ Expressions
           ])),
         ])
 
+.. class:: Eq
+           NotEq
+           Lt
+           LtE
+           Gt
+           GtE
+           Is
+           IsNot
+           In
+           NotIn
+
+   Comparison operator tokens.
 
 .. class:: Call(func, args, keywords, starargs, kwargs)
 
@@ -158,6 +218,11 @@ Expressions
    
    A keyword argument to a function call or class definition. ``arg`` is a raw
    string of the parameter name, ``value`` is a node to pass in.
+
+.. class:: IfExp(test, body, orelse)
+
+   An expression such as ``a if b else c``. Each field holds a single node, so
+   in that example, all three are ``Name`` nodes.
 
 .. class:: Attribute(value, attr, ctx)
 
@@ -209,6 +274,55 @@ Subscripting
                Index(value=Num(n=3)),
              ]), ctx=Load())),
          ])
+
+Comprehensions
+~~~~~~~~~~~~~~
+
+.. class:: ListComp(elt, generators)
+           SetComp(elt, generators)
+           GeneratorExp(elt, generators)
+           DictComp(key, value, generators)
+
+   List and set comprehensions, generator expressions, and dictionary
+   comprehensions. ``elt`` (or ``key`` and ``value``) is a single node
+   representing the part that will be evaluated for each item.
+   
+   ``generators`` is a list of :class:`comprehension` nodes. Comprehensions with
+   more than one ``for`` part are legal, if tricky to get right - see the
+   example below.
+
+.. class:: comprehension(target, iter, ifs)
+
+   One ``for`` clause in a comprehension. ``target`` is the reference to use for
+   each element - typically a :class:`Name` or :class:`Tuple` node. ``iter``
+   is the object to iterate over. ``ifs`` is a list of test expressions: each
+   ``for`` clause can have multiple ``ifs``
+
+::
+
+    >>> parseprint("[ord(c) for line in file for c in line]", mode='eval') # Multiple comprehensions in one.
+    Expression(body=ListComp(elt=Call(func=Name(id='ord', ctx=Load()), args=[
+        Name(id='c', ctx=Load()),
+      ], keywords=[], starargs=None, kwargs=None), generators=[
+        comprehension(target=Name(id='line', ctx=Store()), iter=Name(id='file', ctx=Load()), ifs=[]),
+        comprehension(target=Name(id='c', ctx=Store()), iter=Name(id='line', ctx=Load()), ifs=[]),
+      ]))
+
+    >>> parseprint("(n**2 for n in it if n>5 if n<10)", mode='eval')       # Multiple if clauses
+    Expression(body=GeneratorExp(elt=BinOp(left=Name(id='n', ctx=Load()), op=Pow(), right=Num(n=2)), generators=[
+        comprehension(target=Name(id='n', ctx=Store()), iter=Name(id='it', ctx=Load()), ifs=[
+            Compare(left=Name(id='n', ctx=Load()), ops=[
+                Gt(),
+              ], comparators=[
+                Num(n=5),
+              ]),
+            Compare(left=Name(id='n', ctx=Load()), ops=[
+                Lt(),
+              ], comparators=[
+                Num(n=10),
+              ]),
+          ]),
+      ]))
 
 Statements
 ----------
@@ -286,9 +400,10 @@ Imports
 
 .. class:: ImportFrom(module, names, level)
 
-   Represents``from x import y``. ``module`` is a raw string of the 'from' name,
-   without any leading dots. ``level`` is an integer holding the level of the
-   relative import (0 means absolute import).
+   Represents ``from x import y``. ``module`` is a raw string of the 'from' name,
+   without any leading dots, or ``None`` for statments such as ``from . import foo``.
+   ``level`` is an integer holding the level of the relative import (0 means
+   absolute import).
 
 .. class:: alias(name, asname)
 
@@ -297,11 +412,11 @@ Imports
 
 ::
 
-    >>> parseprint("from ..foo.bar import a as b, c as d")
+    >>> parseprint("from ..foo.bar import a as b, c")
     Module(body=[
         ImportFrom(module='foo.bar', names=[
             alias(name='a', asname='b'),
-            alias(name='c', asname='d'),
+            alias(name='c', asname=None),
           ], level=2),
       ])
 
@@ -351,9 +466,9 @@ Control flow
 .. class:: ExceptHandler(type, name, body)
 
    A single ``except`` clause. ``type`` is the exception type it will match,
-   typically a :class:`Name` node. ``name`` is a raw string for the name to hold
-   the exception, or None if the clause doesn't have ``as foo``. ``body`` is
-   a list of nodes.
+   typically a :class:`Name` node (or ``None`` for a catch-all ``except:`` clause).
+   ``name`` is a raw string for the name to hold the exception, or ``None`` if
+   the clause doesn't have ``as foo``. ``body`` is a list of nodes.
 
 .. class:: With(context_expr, optional_vars, body)
 
