@@ -3,6 +3,11 @@ Meet the Nodes
 
 .. currentmodule: ast
 
+An AST represents each element in your code as an object. These are instances of
+the various subclasses of :class:`AST` described below. For instance, the code
+``a + 1`` is a :class:`BinOp`, with a :class:`Name` on the left, a :class:`Num`
+on the right, and an :class:`Add` operator.
+
 Literals
 --------
 
@@ -52,7 +57,7 @@ Variables
            Store()
            Del()
 
-   Variable referemces can be used to load the value of a variable, to assign
+   Variable references can be used to load the value of a variable, to assign
    a new value to it, or to delete it. Variable references are given a context
    to distinguish these cases.
 
@@ -109,8 +114,18 @@ Expressions
 
 .. class:: Expr(value)
 
-   A container for an expression when it appears as a statement by itself.
-   ``value`` holds one of the other nodes in this section, or a literal or name.
+   When an expression, such as a function call, appears as a statement by itself,
+   with its return value not used or stored, it is wrapped in this container.
+   ``value`` holds one of the other nodes in this section, or a literal, a
+   :class:`Name`, a :class:`Lambda`, or a :class:`Yield` or :class:`YieldFrom`
+   node.
+
+::
+
+    >>> parseprint('-a')
+    Module(body=[
+        Expr(value=UnaryOp(op=USub(), operand=Name(id='a', ctx=Load()))),
+      ])
 
 .. class:: UnaryOp(op, operand)
 
@@ -222,7 +237,7 @@ Expressions
 .. class:: IfExp(test, body, orelse)
 
    An expression such as ``a if b else c``. Each field holds a single node, so
-   in that example, all three are ``Name`` nodes.
+   in that example, all three are :class:`Name` nodes.
 
 .. class:: Attribute(value, attr, ctx)
 
@@ -230,6 +245,14 @@ Expressions
    :class:`Name`. ``attr`` is a bare string giving the name of the attribute,
    and ``ctx`` is :class:`Load`, :class:`Store` or :class:`Del` according to
    how the attribute is acted on.
+
+   ::
+
+       >>> parseprint('snake.colour')
+       Module(body=[
+           Expr(value=Attribute(value=Name(id='snake', ctx=Load()), attr='colour', ctx=Load())),
+         ])
+
 
 Subscripting
 ~~~~~~~~~~~~
@@ -362,7 +385,7 @@ Statements
 .. class:: Print(dest, values, nl)
 
    Print statement, Python 2 only. ``dest`` is an optional destination (for
-   ``print >>dest``. ``values is a list of nodes. ``nl`` (newline) is True or
+   ``print >>dest``. ``values`` is a list of nodes. ``nl`` (newline) is True or
    False depending on whether there's a comma at the end of the statement.
 
 .. class:: Raise(exc, cause)
@@ -382,7 +405,8 @@ Statements
 
 .. class:: Delete(targets)
 
-   Represents a ``del`` statement. ``targets`` is a list of nodes.
+   Represents a ``del`` statement. ``targets`` is a list of nodes, such as
+   :class:`Name`, :class:`Attribute` or :class:`Subscript` nodes.
 
 .. class:: Pass()
 
@@ -454,6 +478,29 @@ Control flow
 
    The ``break`` and ``continue`` statements.
 
+::
+
+    In [2]: %%dump_ast
+       ...: for a in b:
+       ...:   if a > 5:
+       ...:     break
+       ...:   else:
+       ...:     continue
+       ...: 
+    Module(body=[
+        For(target=Name(id='a', ctx=Store()), iter=Name(id='b', ctx=Load()), body=[
+            If(test=Compare(left=Name(id='a', ctx=Load()), ops=[
+                Gt(),
+              ], comparators=[
+                Num(n=5),
+              ]), body=[
+                Break(),
+              ], orelse=[
+                Continue(),
+              ]),
+          ], orelse=[]),
+      ])
+
 .. class:: TryFinally(body, finalbody)
            TryExcept(body, handlers, orelse)
    
@@ -469,6 +516,25 @@ Control flow
    typically a :class:`Name` node (or ``None`` for a catch-all ``except:`` clause).
    ``name`` is a raw string for the name to hold the exception, or ``None`` if
    the clause doesn't have ``as foo``. ``body`` is a list of nodes.
+
+::
+
+    In [3]: %%dump_ast
+       ...: try:
+       ...:   a + 1
+       ...: except TypeError:
+       ...:   pass
+       ...: 
+    Module(body=[
+        TryExcept(body=[
+            Expr(value=BinOp(left=Name(id='a', ctx=Load()), op=Add(), right=Num(n=1))),
+          ], handlers=[
+            ExceptHandler(type=Name(id='TypeError', ctx=Load()), name=None, body=[
+                Pass(),
+              ]),
+          ], orelse=[]),
+      ])
+
 
 .. class:: With(context_expr, optional_vars, body)
 
