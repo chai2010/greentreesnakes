@@ -25,6 +25,9 @@ Contents:
    
    `Instrumenting the AST <http://www.dalkescientific.com/writings/diary/archive/2010/02/22/instrumenting_the_ast.html>`_
      Using AST tools to assess code coverage.
+     
+   `astviewer <https://github.com/titusjan/astviewer>`_
+     A simple GUI for exploring ASTs
 
 
 Indices and tables
