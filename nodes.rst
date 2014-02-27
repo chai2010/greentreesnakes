@@ -376,11 +376,13 @@ Statements
          ], value=Name(id='c', ctx=Load())),
      ])
 
-.. class AugAssign(target, op, value)
+.. class:: AugAssign(target, op, value)
 
    Augmented assignment, such as ``a += 1``. In that example, ``target`` is a
-   :class:`Name` node for ``a``, op is :class:`Add`, and ``value`` is a
-   :class:`Num` node for 1.
+   :class:`Name` node for ``a`` (with the :class:`Store` context), op is
+   :class:`Add`, and ``value`` is a :class:`Num` node for 1. ``target`` can be
+   :class:`Name`, :class:`Subscript` or :class:`Attribute`, but not a
+   :class:`Tuple` or :class:`List` (unlike the targets of :class:`Assign`).
 
 .. class:: Print(dest, values, nl)
 
