@@ -207,8 +207,8 @@ Expressions
 
 .. class:: Call(func, args, keywords, starargs, kwargs)
 
-   A function call. ``func`` is the function, which will normally be a
-   :class:`Name` object. Of the arguments:
+   A function call. ``func`` is the function, which will often be a
+   :class:`Name` or :class:`Attribute` object. Of the arguments:
 
    * ``args`` holds a list of the arguments passed by position.
    * ``keywords`` holds a list of :class:`keyword` objects representing
