@@ -114,7 +114,8 @@ Expressions
 
 .. class:: Expr(value)
 
-   When an expression, such as a function call, appears as a statement by itself,
+   When an expression, such as a function call, appears as a statement by itself
+   (an :ref:`expression statement <python:exprstmts>`),
    with its return value not used or stored, it is wrapped in this container.
    ``value`` holds one of the other nodes in this section, or a literal, a
    :class:`Name`, a :class:`Lambda`, or a :class:`Yield` or :class:`YieldFrom`
