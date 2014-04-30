@@ -45,6 +45,13 @@ Literals
 
    Represents the ``...`` syntax for the ``Ellipsis`` singleton.
 
+.. class:: NameConstant(value)
+
+   :data:`True`, :data:`False` or :data:`None`. ``value`` holds one of those constants.
+
+   .. versionadded:: 3.4
+      Previously, these constants were instances of :class:`Name`.
+
 Variables
 ---------
 
