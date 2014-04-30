@@ -504,14 +504,19 @@ Control flow
           ], orelse=[]),
       ])
 
-.. class:: TryFinally(body, finalbody)
-           TryExcept(body, handlers, orelse)
-   
+.. class:: Try(body, handlers, orelse, finalbody)
+
    ``try`` blocks. All attributes are list of nodes to execute, except for
    ``handlers``, which is a list of :class:`ExceptHandler` nodes.
-   
-   If a ``try`` block has both ``except`` and ``finally`` clauses, it is parsed
-   as a :class:`TryFinally`, with the body containing a :class:`TryExcept`.
+
+   .. versionadded:: 3.3
+
+.. class:: TryFinally(body, finalbody)
+           TryExcept(body, handlers, orelse)
+
+   ``try`` blocks up to Python 3.2, inclusive. A ``try`` block with both
+   ``except`` and ``finally`` clauses is parsed as a :class:`TryFinally`, with
+   the body containing a :class:`TryExcept`.
 
 .. class:: ExceptHandler(type, name, body)
 
