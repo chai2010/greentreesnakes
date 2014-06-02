@@ -219,11 +219,11 @@ Expressions
 
    * ``args`` holds a list of the arguments passed by position.
    * ``keywords`` holds a list of :class:`keyword` objects representing
-     arguments passed by keyword.%
+     arguments passed by keyword.
    * ``starargs`` and ``kwargs`` each hold a single node, for arguments passed
      as ``*args`` and ``**kwargs``.
    
-   When constructing a Call node, ``args`` and ``kwargs`` are required, but they
+   When compiling a Call node, ``args`` and ``keywords`` are required, but they
    can be empty lists. ``starargs`` and ``kwargs`` are optional.
    
    ::
