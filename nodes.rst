@@ -576,23 +576,26 @@ Function and class definitions
    ``lambda`` is a minimal function definition that can be used inside an
    expression. Unlike :class:`FunctionDef`, ``body`` holds a single node.
 
-.. class:: arguments(args, vararg, varargannotation, kwonlyargs, kwarg, \
-                     kwargannotation, defaults, kw_defaults)
+.. class:: arguments(args, vararg, kwonlyargs, kwarg, defaults, kw_defaults)
    
    The arguments for a function. In **Python 3**:
    
    * ``args`` and ``kwonlyargs`` are lists of :class:`arg` nodes.
-   * ``vararg`` and ``kwarg`` are raw strings referring to the ``*args, **kwargs``
-     parameters.
-   * ``varargannotation`` and ``kwargannotation`` - see :class:`arg`
+   * ``vararg`` and ``kwarg`` are single :class:`arg` nodes, referring to the
+     ``*args, **kwargs`` parameters.
    * ``defaults`` is a list of default values for arguments that can be passed
      positionally. If there are fewer defaults, they correspond to the last n
      arguments.
    * ``kw_defaults`` is a list of default values for keyword-only arguments. If
      one is ``None``, the corresponding argument is required.
 
-   In **Python 2**, the attributes for annotations and keyword-only arguments
-   are not needed.
+   .. versionchanged:: 3.4
+   
+      Up to Python 3.3, ``vararg`` and ``kwarg`` were raw strings of the
+      argument names, and there were separate ``varargannotation`` and
+      ``kwargannotation`` fields to hold their annotations.
+
+   In **Python 2**, the attributes for keyword-only arguments are not needed.
 
 .. class:: arg(arg, annotation)
 
@@ -616,15 +619,15 @@ Function and class definitions
             arg(arg='a', annotation=Str(s='annotation')),
             arg(arg='b', annotation=None),
             arg(arg='c', annotation=None),
-          ], vararg='d', varargannotation=None, kwonlyargs=[
+          ], vararg=arg(arg='d', annotation=None), kwonlyargs=[
             arg(arg='e', annotation=None),
             arg(arg='f', annotation=None),
-          ], kwarg='g', kwargannotation=None, defaults=[
-            Num(n=1),
-            Num(n=2),
           ], kw_defaults=[
             None,
             Num(n=3),
+          ], kwarg=arg(arg='g', annotation=None), defaults=[
+            Num(n=1),
+            Num(n=2),
           ]), body=[
             Pass(),
           ], decorator_list=[
