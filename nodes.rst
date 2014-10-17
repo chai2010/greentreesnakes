@@ -551,11 +551,42 @@ Control flow
       ])
 
 
-.. class:: With(context_expr, optional_vars, body)
+.. class:: With(items, body)
 
-   A ``with`` block. ``context_expr`` is the context manager, often a
-   :class:`Call` node. ``optional_vars`` is a :class:`Name`, :class:`Tuple` or
-   :class:`List` for the ``as foo`` part, or ``None`` if that isn't used.
+   A ``with`` block. ``items`` is a list of :class:`withitem` nodes representing
+   the context managers, and ``body`` is the indented block inside the context.
+
+   .. versionchanged:: 3.3
+
+      Previously, a :class:`With` node had ``context_expr`` and ``optional_vars``
+      instead of ``items``. Multiple contexts were represented by nesting
+      a second :class:`With` node as the only item in the ``body`` of the first.
+
+.. class:: withitem(context_expr, optional_vars)
+
+   A single context manager in a ``with`` block. ``context_expr`` is the context
+   manager, often a :class:`Call` node. ``optional_vars`` is a :class:`Name`,
+   :class:`Tuple` or :class:`List` for the ``as foo`` part, or ``None`` if that
+   isn't used.
+
+::
+
+    In [3]: %%dump_ast
+      ...: with a as b, c as d:
+      ...:     do_things(b, d)
+      ...:
+    Module(body=[
+        With(items=[
+            withitem(context_expr=Name(id='a', ctx=Load()), optional_vars=Name(id='b', ctx=Store())),
+            withitem(context_expr=Name(id='c', ctx=Load()), optional_vars=Name(id='d', ctx=Store())),
+          ], body=[
+            Expr(value=Call(func=Name(id='do_things', ctx=Load()), args=[
+                Name(id='b', ctx=Load()),
+                Name(id='d', ctx=Load()),
+              ], keywords=[], starargs=None, kwargs=None)),
+          ]),
+      ])
+
 
 Function and class definitions
 ------------------------------
