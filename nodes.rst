@@ -100,10 +100,10 @@ Variables
    A ``*var`` variable reference. ``value`` holds the variable, typically a
    :class:`Name` node.
    
-    Note that this *isn't* always needed to call or define a function with ``*args`` -
-    the :class:`Call` and :class:`FunctionDef` nodes have special fields for that.
-    In Python 3.5 and above, `Starred` is though needed when building a :class:`Call` 
-    node with ``*args``.
+   Note that this *isn't* always needed to call or define a function with ``*args`` -
+   the :class:`Call` and :class:`FunctionDef` nodes have special fields for that.
+   In Python 3.5 and above, `Starred` is though needed when building a :class:`Call` 
+   node with ``*args``.
 
 ::
 
