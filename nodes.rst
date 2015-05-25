@@ -100,8 +100,9 @@ Variables
    A ``*var`` variable reference. ``value`` holds the variable, typically a
    :class:`Name` node.
    
-   Note that this *isn't* needed to call or define a function with ``*args`` -
-   the :class:`Call` and :class:`FunctionDef` nodes have special fields for that.
+   Note that this *is not* always needed to call or define a function with
+   ``*args`` - depending on the minor version of Python the :class:`Call` and
+   :class:`FunctionDef` nodes have special fields for that.
 
 ::
 
@@ -215,7 +216,7 @@ Expressions
 .. class:: Call(func, args, keywords, starargs, kwargs)
 
    A function call. ``func`` is the function, which will often be a
-   :class:`Name` or :class:`Attribute` object. Of the arguments:
+   :class:`Name` or :class:`Attribute` object. On Python 3.0 to 3.4 of the arguments:
 
    * ``args`` holds a list of the arguments passed by position.
    * ``keywords`` holds a list of :class:`keyword` objects representing
@@ -226,17 +227,39 @@ Expressions
    When compiling a Call node, ``args`` and ``keywords`` are required, but they
    can be empty lists. ``starargs`` and ``kwargs`` are optional.
    
-   ::
+   code-block ::
 
        >>> parseprint("func(a, b=c, *d, **e)")
        Module(body=[
            Expr(value=Call(func=Name(id='func', ctx=Load()),
                            args=[Name(id='a', ctx=Load())],
                            keywords=[keyword(arg='b', value=Name(id='c', ctx=Load()))],
-                           starargs=Name(id='d', ctx=Load()),
-                           kwargs=Name(id='e', ctx=Load()))),
+                           starargs=Name(id='d', ctx=Load()),     # gone in 3.5
+                           kwargs=Name(id='e', ctx=Load()))),     # gone in 3.5
          ])
 
+
+    Note that since Python 3.5 the signature of `Call` have changed. `starargs`
+    is now replaced by value in args which are `Starred` nodes, and `kwargs` is
+    replaced by `keyword` nodes in `keywords` for which  `arg` is `None` thus
+    the above function will get the following AST on Python 3.5+:
+
+    :: 
+
+        >>> parseprint("func(a, b=c, *d, **e)")
+        Module(body=[
+            Expr(value=Call(func=Name(id='func', ctx=Load()),
+                 args=[
+                        Name(id='a', ctx=Load()), 
+                        Starred(value=Name(id='d', ctx=Load()), ctx=Load()) # new in 3.5
+                     ],
+                 keywords=[
+                        keyword(arg='b', value=Name(id='c', ctx=Load())), 
+                        keyword(arg=None, value=Name(id='e', ctx=Load()))   # new in 3.5
+                     ]))
+            ])
+
+    
 .. class:: keyword(arg, value)
    
    A keyword argument to a function call or class definition. ``arg`` is a raw
@@ -601,6 +624,14 @@ Function and class definitions
    * ``decorator_list`` is the list of decorators to be applied, stored outermost
      first (i.e. the first in the list will be applied last).
    * ``returns`` is the return annotation (Python 3 only).
+
+.. todo ::
+    add following fields in relevant versions of Python:
+        - vararg  - <ast.arg>
+        - kwonlyargs –  [<ast.arg>,...]
+        - kw_defaults - [...]
+        - kwarg - <ast.arg>
+        - defaults - [...]
 
 .. class:: Lambda(args, body)
 
