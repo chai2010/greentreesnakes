@@ -100,10 +100,10 @@ Variables
    A ``*var`` variable reference. ``value`` holds the variable, typically a
    :class:`Name` node.
    
-   Note that this *isn't* always needed to call or define a function with ``*args`` -
-   the :class:`Call` and :class:`FunctionDef` nodes have special fields for that.
-   In Python 3.5 and above, `Starred` is though needed when building a :class:`Call` 
-   node with ``*args``.
+   Note that this *isn't* used to define a function with ``*args`` -
+   :class:`FunctionDef` nodes have special fields for that.
+   In Python 3.5 and above, though, :class:`Starred` is needed when building a
+   :class:`Call` node with ``*args``.
 
 ::
 
@@ -223,7 +223,8 @@ Expressions
    * ``keywords`` holds a list of :class:`keyword` objects representing
      arguments passed by keyword.
    * ``starargs`` and ``kwargs`` each hold a single node, for arguments passed
-     as ``*args`` and ``**kwargs``.
+     as ``*args`` and ``**kwargs``. These are removed in Python 3.5 - see below
+     for details.
    
    When compiling a Call node, ``args`` and ``keywords`` are required, but they
    can be empty lists. ``starargs`` and ``kwargs`` are optional.
@@ -239,26 +240,25 @@ Expressions
                            kwargs=Name(id='e', ctx=Load()))),     # gone in 3.5
          ])
 
-        >>> parseprint("func(a, b=c, *d, **e)") # Python 3.5
-        Module(body=[
-            Expr(value=Call(func=Name(id='func', ctx=Load()),
-                 args=[
-                        Name(id='a', ctx=Load()), 
-                        Starred(value=Name(id='d', ctx=Load()), ctx=Load()) # new in 3.5
-                     ],
-                 keywords=[
-                        keyword(arg='b', value=Name(id='c', ctx=Load())), 
-                        keyword(arg=None, value=Name(id='e', ctx=Load()))   # new in 3.5
-                     ]))
-            ])
+       >>> parseprint("func(a, b=c, *d, **e)") # Python 3.5
+       Module(body=[
+           Expr(value=Call(func=Name(id='func', ctx=Load()),
+                args=[
+                       Name(id='a', ctx=Load()),
+                       Starred(value=Name(id='d', ctx=Load()), ctx=Load()) # new in 3.5
+                    ],
+                keywords=[
+                       keyword(arg='b', value=Name(id='c', ctx=Load())),
+                       keyword(arg=None, value=Name(id='e', ctx=Load()))   # new in 3.5
+                    ]))
+           ])
 
-    You can see above that in that since Python 3.5 the signature of
-    :class:`Call` have changed. ``starargs`` is now replaced by value in
-    ``args`` which are :class:`Starred` nodes, and ``kwargs`` is replaced by
-    :class:`keyword` nodes in ``keywords`` for which  ``arg`` is ``None``.
+   You can see here that the signature of :class:`Call` has changed in Python 3.5.
+   Instead of ``starargs``, :class:`Starred` nodes can now appear in ``args``,
+   and ``kwargs`` is replaced by
+   :class:`keyword` nodes in ``keywords`` for which  ``arg`` is ``None``.
 
 
-    
 .. class:: keyword(arg, value)
    
    A keyword argument to a function call or class definition. ``arg`` is a raw
