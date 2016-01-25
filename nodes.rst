@@ -744,3 +744,40 @@ Function and class definitions
             Name(id='dec2', ctx=Load()),
           ]),
       ])
+
+
+Async and await
+---------------
+
+.. versionadded:: 3.5
+   All of these nodes were added. See :ref:`the What's New notes <python:whatsnew-pep-492>`
+   on the new syntax.
+
+.. class:: AsyncFunctionDef(name, args, body, decorator_list, returns)
+
+   An ``async def`` function definition. Has the same fields as
+   :class:`FunctionDef`.
+
+.. class:: Await(value)
+
+   An ``await`` expression. ``value`` is what it waits for.
+   Only valid in the body of an :class:`AsyncFunctionDef`.
+
+::
+
+    In [2]: %%dump_ast
+      ...: async def f():
+      ...:   await g()
+      ...: 
+    Module(body=[
+       AsyncFunctionDef(name='f', args=arguments(args=[], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]), body=[
+           Expr(value=Await(value=Call(func=Name(id='g', ctx=Load()), args=[], keywords=[]))),
+         ], decorator_list=[], returns=None),
+    ])
+
+.. class:: AsyncFor(target, iter, body, orelse)
+           AsyncWith(items, body)
+
+   ``async for`` loops and ``async with`` context managers. They have the same
+   fields as :class:`For` and :class:`With`, respectively. Only valid in the
+   body of an :class:`AsyncFunctionDef`.
