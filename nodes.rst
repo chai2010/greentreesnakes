@@ -40,6 +40,12 @@ Literals
 
    A dictionary. ``keys`` and ``values`` hold lists of nodes with matching order
    (i.e. they could be paired with :func:`zip`).
+   
+   .. versionchanged:: 3.5
+      It is now possible to expand one dictionary into another, as in
+      ``{'a': 1, **d}``. In the AST, the expression to be expanded (a
+      :class:`Name` node in this example) goes in the ``values`` list, with a
+      ``None`` at the corresponding position in ``keys``.      
 
 .. class:: Ellipsis()
 
