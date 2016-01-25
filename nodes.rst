@@ -167,8 +167,12 @@ Expressions
            BitOr
            BitXor
            BitAnd
+           MatMult
 
    Binary operator tokens.
+   
+   .. versionadded:: 3.5
+      :class:`MatMult` - the ``@`` operator for matrix multiplication.
 
 .. class:: BoolOp(op, values)
 
