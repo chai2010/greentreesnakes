@@ -564,6 +564,9 @@ Control flow
    ``name`` is a raw string for the name to hold the exception, or ``None`` if
    the clause doesn't have ``as foo``. ``body`` is a list of nodes.
 
+   In Python 2, ``name`` was a :class:`Name` node with ``ctx=Store()``, instead
+   of a raw string.
+
 ::
 
     In [3]: %%dump_ast
@@ -573,14 +576,14 @@ Control flow
        ...:   pass
        ...: 
     Module(body=[
-        TryExcept(body=[
-            Expr(value=BinOp(left=Name(id='a', ctx=Load()), op=Add(), right=Num(n=1))),
-          ], handlers=[
-            ExceptHandler(type=Name(id='TypeError', ctx=Load()), name=None, body=[
-                Pass(),
-              ]),
-          ], orelse=[]),
-      ])
+       Try(body=[
+           Expr(value=BinOp(left=Name(id='a', ctx=Load()), op=Add(), right=Num(n=1))),
+         ], handlers=[
+           ExceptHandler(type=Name(id='TypeError', ctx=Load()), name=None, body=[
+               Pass(),
+             ]),
+         ], orelse=[], finalbody=[]),
+     ])
 
 
 .. class:: With(items, body)
