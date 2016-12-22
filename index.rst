@@ -29,6 +29,9 @@ Contents:
    `astviewer <https://github.com/titusjan/astviewer>`_
      A simple GUI for exploring ASTs
 
+   `Thonny <http://thonny.org>`_
+     A Python IDE with AST explorer built in (*Main menu => View => AST*).
+
 
 Indices and tables
 ==================
