@@ -3,4 +3,4 @@ Syntax Trees in Python.
 
 The guide can be viewed at:
 
-http://greentreesnakes.readthedocs.org/
+https://greentreesnakes.readthedocs.io/
