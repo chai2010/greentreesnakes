@@ -20,6 +20,44 @@ Literals
 
    A string. The ``s`` attribute hold the value. In Python 2, the same type
    holds unicode strings too.
+   
+.. class:: FormattedValue(value, conversion, format_spec)
+
+   .. versionadded:: 3.6
+    
+   Node representing a single formatting field in an f-string. If the string 
+   contains a single formatting field and nothing else the node can be 
+   isolated otherwise it appears in :class:`JoinedStr`.
+   
+   * ``value`` is any node that can appear in the value on an :class:`Expr` 
+     node. 
+   * ``conversion`` is an integer (-1: no formatting, 115: string 
+     formatting ie !s option, 114: repr formatting ie !r option, 97: ascii
+     formatting ie !a option). 
+   * ``format_spec`` is a :class:`Str` node
+     reprensenting the formatting of the value if specified. Note that 
+  
+   ``conversion`` and ``format_spec`` cannot both be set at the same time.
+    
+   >>> parseprint(f"{a}")
+   Module(body=[
+       Expr(value=FormattedValue(value=Name(id='a', ctx=Load()), conversion=-1, format_spec=None)),
+      ])
+    
+.. class:: JoinedStr(values)
+
+   .. versionadded:: 3.6
+    
+   Used to join multiple f-strings (:class:`FormattedValue)`, f-string to 
+   string literals and multiple f-strings to string literals.
+    
+   >>> parseprint(f'My name is {name}')
+   Module(body=[
+       Expr(value=JoinedStr(values=[
+            Str(s='My name is '),
+            FormattedValue(value=Name(id='name', ctx=Load()), conversion=-1, format_spec=None),
+           ])),
+      ])
 
 .. class:: Bytes(s)
 
@@ -392,12 +430,15 @@ Comprehensions
           is_async=0),
       ]))
       
-    >>> parseprint("[format(line) async for line in soc]", mode='eval') # Async comprehension.
-    Expression(body=ListComp(elt=Call(func=Name(id='format', ctx=Load()), args=[
-        Name(id='c', ctx=Load()),
-      ], keywords=[], starargs=None, kwargs=None), generators=[
-        comprehension(target=Name(id='line', ctx=Store()), iter=Name(id='soc', ctx=Load()), ifs=[], is_async=1),
-      ]))
+    >>> parseprint(("async def f():"
+                    "   return [i async for i in soc]")) # Async comprehension.
+    Module(body=[
+    AsyncFunctionDef(name='f', args=arguments(args=[], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]), body=[
+        Return(value=ListComp(elt=Name(id='i', ctx=Load()), generators=[
+            comprehension(target=Name(id='i', ctx=Store()), iter=Name(id='soc', ctx=Load()), ifs=[], is_async=1),
+          ])),
+      ], decorator_list=[], returns=None),
+  ])
 
 Statements
 ----------
@@ -436,7 +477,7 @@ Statements
    be a :class:`Name`, a :class:`Attribute` or a :class:`Subscript`. 
    ``annotation`` is the annotation, such as a :class:`Str` or :class:`Name` 
    node. ``value`` is a single optional node. ``simple`` is a boolean integer
-   set to True for :class:`Name` node in ``target`` that do not appear in 
+   set to True for a :class:`Name` node in ``target`` that do not appear in 
    between parenthesis and are hence pure names and not expressions.
    
    >>> parseprint("c: int")
