@@ -20,6 +20,44 @@ Literals
 
    A string. The ``s`` attribute hold the value. In Python 2, the same type
    holds unicode strings too.
+   
+.. class:: FormattedValue(value, conversion, format_spec)
+
+   .. versionadded:: 3.6
+    
+   Node representing a single formatting field in an f-string. If the string 
+   contains a single formatting field and nothing else the node can be 
+   isolated otherwise it appears in :class:`JoinedStr`.
+   
+   * ``value`` is any node that can appear in the value on an :class:`Expr` 
+     node. 
+   * ``conversion`` is an integer (-1: no formatting, 115: string 
+     formatting ie !s option, 114: repr formatting ie !r option, 97: ascii
+     formatting ie !a option). 
+   * ``format_spec`` is a :class:`Str` node
+     reprensenting the formatting of the value if specified. Note that 
+  
+   ``conversion`` and ``format_spec`` cannot both be set at the same time.
+    
+   >>> parseprint(f"{a}")
+   Module(body=[
+       Expr(value=FormattedValue(value=Name(id='a', ctx=Load()), conversion=-1, format_spec=None)),
+      ])
+    
+.. class:: JoinedStr(values)
+
+   .. versionadded:: 3.6
+    
+   Used to join multiple f-strings (:class:`FormattedValue)`, f-string to 
+   string literals and multiple f-strings to string literals.
+    
+   >>> parseprint(f'My name is {name}')
+   Module(body=[
+       Expr(value=JoinedStr(values=[
+            Str(s='My name is '),
+            FormattedValue(value=Name(id='name', ctx=Load()), conversion=-1, format_spec=None),
+           ])),
+      ])
 
 .. class:: Bytes(s)
 
@@ -354,12 +392,16 @@ Comprehensions
    more than one ``for`` part are legal, if tricky to get right - see the
    example below.
 
-.. class:: comprehension(target, iter, ifs)
+.. class:: comprehension(target, iter, ifs, is_async)
 
    One ``for`` clause in a comprehension. ``target`` is the reference to use for
    each element - typically a :class:`Name` or :class:`Tuple` node. ``iter``
    is the object to iterate over. ``ifs`` is a list of test expressions: each
-   ``for`` clause can have multiple ``ifs``
+   ``for`` clause can have multiple ``ifs``. 
+   
+   .. versionadded::  3.6
+      ``is_async`` indicates a comprehension is asynchronous (using an
+      ``async for`` instead of ``for``).
 
 ::
 
@@ -367,8 +409,8 @@ Comprehensions
     Expression(body=ListComp(elt=Call(func=Name(id='ord', ctx=Load()), args=[
         Name(id='c', ctx=Load()),
       ], keywords=[], starargs=None, kwargs=None), generators=[
-        comprehension(target=Name(id='line', ctx=Store()), iter=Name(id='file', ctx=Load()), ifs=[]),
-        comprehension(target=Name(id='c', ctx=Store()), iter=Name(id='line', ctx=Load()), ifs=[]),
+        comprehension(target=Name(id='line', ctx=Store()), iter=Name(id='file', ctx=Load()), ifs=[], is_async=0),
+        comprehension(target=Name(id='c', ctx=Store()), iter=Name(id='line', ctx=Load()), ifs=[], is_async=0),
       ]))
 
     >>> parseprint("(n**2 for n in it if n>5 if n<10)", mode='eval')       # Multiple if clauses
@@ -384,8 +426,19 @@ Comprehensions
               ], comparators=[
                 Num(n=10),
               ]),
-          ]),
+          ],
+          is_async=0),
       ]))
+      
+    >>> parseprint(("async def f():"
+                    "   return [i async for i in soc]")) # Async comprehension.
+    Module(body=[
+    AsyncFunctionDef(name='f', args=arguments(args=[], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]), body=[
+        Return(value=ListComp(elt=Name(id='i', ctx=Load()), generators=[
+            comprehension(target=Name(id='i', ctx=Store()), iter=Name(id='soc', ctx=Load()), ifs=[], is_async=1),
+          ])),
+      ], decorator_list=[], returns=None),
+  ])
 
 Statements
 ----------
@@ -415,6 +468,51 @@ Statements
              ], ctx=Store()),
          ], value=Name(id='c', ctx=Load())),
      ])
+     
+.. class:: AnnAssign(target, annotation, value, simple)
+
+   .. versionadded::  3.6
+
+   An assignment with a type annotation. ``target`` is a single node and can 
+   be a :class:`Name`, a :class:`Attribute` or a :class:`Subscript`. 
+   ``annotation`` is the annotation, such as a :class:`Str` or :class:`Name` 
+   node. ``value`` is a single optional node. ``simple`` is a boolean integer
+   set to True for a :class:`Name` node in ``target`` that do not appear in 
+   between parenthesis and are hence pure names and not expressions.
+   
+   >>> parseprint("c: int")
+   Module(body=[
+       AnnAssign(target=Name(id='c', ctx=Store()),
+                 annotation=Name(id='int', ctx=Load()),
+                 value=None, 
+                 simple=1),
+     ])
+    
+   >>> parseprint("(a): int = 1")  # Expression like name
+   Module(body=[
+       AnnAssign(target=Name(id='a', ctx=Store()), 
+       annotation=Name(id='int', ctx=Load()), 
+       value=Num(n=1), 
+       simple=0),
+     ])
+    
+   >>> parseprint("a.b: int")  # Attribute annotation
+   Module(body=[
+       AnnAssign(target=Attribute(value=Name(id='a', ctx=Load()),
+                                  attr='b', ctx=Store()),
+                 annotation=Name(id='int', ctx=Load()), 
+                 value=None, 
+                 simple=0),
+     ])
+    
+   >>> parseprint("a[1]: int")  # Subscript annotation
+   Module(body=[
+       AnnAssign(target=Subscript(value=Name(id='a', ctx=Load()), 
+                                  slice=Index(value=Num(n=1)), ctx=Store()),
+                 annotation=Name(id='int', ctx=Load()), 
+                 value=None, 
+                 simple=0),
+    ])
 
 .. class:: AugAssign(target, op, value)
 
