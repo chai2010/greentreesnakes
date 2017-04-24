@@ -53,6 +53,12 @@ Going backwards
 ---------------
 
 Python itself doesn't provide a way to turn a compiled code object into an AST,
-or an AST into a string of code. Third party tools, like `Meta
-<http://pypi.python.org/pypi/meta>`_, allow you to do this - but they might not
-be as well supported.
+or an AST into a string of code. Some third party tools can do these things:
+
+- `astor <http://astor.readthedocs.io/en/latest/>`_ can convert an AST back to
+  readable Python code.
+- `Meta <http://pypi.python.org/pypi/meta>`_ also tries to decompile Python
+  bytecode to an AST, but it appears to be unmaintained.
+- `uncompyle6 <https://pypi.python.org/pypi/uncompyle6>`_ is an actively
+  maintained Python decompiler at the time of writing. Its documented interface
+  is a command line program producing Python source code.
