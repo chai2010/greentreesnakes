@@ -829,9 +829,10 @@ Function and class definitions
      <http://www.python.org/dev/peps/pep-3115/>`_.
    * ``starargs`` and ``kwargs`` are each a single node, as in a function call.
      starargs will be expanded to join the list of base classes, and kwargs will
-     be passed to the metaclass.
+     be passed to the metaclass.  These are removed in Python 3.6 - see below
+     for details.
    * ``body`` is a list of nodes representing the code within the class
-     definition.
+     definition. 
    * ``decorator_list`` is a list of nodes, as in :class:`FunctionDef`.
 
 ::
@@ -848,7 +849,7 @@ Function and class definitions
             Name(id='base2', ctx=Load()),
           ], keyword=
             keyword(arg='metaclass', value=Name(id='meta', ctx=Load())),
-          ], starargs=None, kwargs=None, body=[
+          ], starargs=None # gone in Python 3.6, kwargs=None # gone in Python 3.6, body=[
             Pass(),
           ], decorator_list=[
             Name(id='dec1', ctx=Load()),
