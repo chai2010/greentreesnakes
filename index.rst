@@ -31,6 +31,9 @@ Contents:
 
    `Thonny <http://thonny.org>`_
      A Python IDE with AST explorer built in (*Main menu => View => AST*).
+  
+   `showast <https://github.com/hchasestevens/show_ast>`_
+     An IPython extension to show ASTs in Jupyter notebooks.
 
 
 Indices and tables
@@ -38,4 +41,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
-
