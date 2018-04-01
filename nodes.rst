@@ -29,35 +29,39 @@ Literals
    contains a single formatting field and nothing else the node can be 
    isolated otherwise it appears in :class:`JoinedStr`.
    
-   * ``value`` is any node that can appear in the value on an :class:`Expr` 
-     node. 
-   * ``conversion`` is an integer (-1: no formatting, 115: string 
-     formatting ie !s option, 114: repr formatting ie !r option, 97: ascii
-     formatting ie !a option). 
-   * ``format_spec`` is a :class:`Str` node
-     reprensenting the formatting of the value if specified. Note that 
-  
-   ``conversion`` and ``format_spec`` can both be set at the same time.
-    
-   >>> parseprint(f"{a}")
-   Module(body=[
-       Expr(value=FormattedValue(value=Name(id='a', ctx=Load()), conversion=-1, format_spec=None)),
-      ])
+   * ``value`` is any expression node (such as a literal, a variable, or a
+     function call).
+   * ``conversion`` is an integer:
+
+     * -1: no formatting
+     * 115: ``!s`` string formatting
+     * 114: ``!r`` repr formatting
+     * 97: ``!a`` ascii formatting
+
+   * ``format_spec`` is a :class:`JoinedStr` node reprensenting the formatting
+     of the value, or ``None`` if no format was specified. Both
+     ``conversion`` and ``format_spec`` can be set at the same time.
     
 .. class:: JoinedStr(values)
 
    .. versionadded:: 3.6
     
-   Used to join multiple f-strings (:class:`FormattedValue)`, f-string to 
-   string literals and multiple f-strings to string literals.
+   An f-string, comprising a series of :class:`FormattedValue` and :class:`Str`
+   nodes.
     
-   >>> parseprint(f'My name is {name}')
+   >>> parseprint('f"sin({a}) is {sin(a):.3}"')
    Module(body=[
        Expr(value=JoinedStr(values=[
-            Str(s='My name is '),
-            FormattedValue(value=Name(id='name', ctx=Load()), conversion=-1, format_spec=None),
-           ])),
-      ])
+           Str(s='sin('),
+           FormattedValue(value=Name(id='a', ctx=Load()), conversion=-1, format_spec=None),
+           Str(s=') is '),
+           FormattedValue(value=Call(func=Name(id='sin', ctx=Load()), args=[
+               Name(id='a', ctx=Load()),
+             ], keywords=[]), conversion=-1, format_spec=JoinedStr(values=[
+               Str(s='.3'),
+             ])),
+         ])),
+     ])
 
 .. class:: Bytes(s)
 
