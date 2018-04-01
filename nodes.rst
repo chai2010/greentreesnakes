@@ -63,6 +63,11 @@ Literals
          ])),
      ])
 
+.. note::
+   The pretty-printer used in these examples is available `in the source repository
+   <https://bitbucket.org/takluyver/greentreesnakes/src/default/astpp.py>`_ for
+   Green Tree Snakes.
+
 .. class:: Bytes(s)
 
    A :class:`bytes` object. The ``s`` attribute holds the value. Python 3 only.
@@ -136,12 +141,6 @@ Variables
             Name(id='a', ctx=Del()),
           ]),
       ])
-
-
-.. note::
-   The pretty-printer used in these examples is available `in the source repository
-   <https://bitbucket.org/takluyver/greentreesnakes/src/default/astpp.py>`_ for
-   Green Tree Snakes.
 
 .. class:: Starred(value, ctx)
 
